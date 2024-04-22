@@ -9,24 +9,38 @@
 
 #include "TurretPawn.generated.h"
 
-UCLASS()
+UCLASS(Abstract)
 class DRONEGAME_API ATurretPawn : public ABasePawn
 {
 	GENERATED_BODY()
 
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	class UPawnSensingComponent* PawnSensingComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	class UFloatingPawnMovement* MovementComponent;
+
 public:
-	// Sets default values for this pawn's properties
+	UPROPERTY(EditAnywhere)
+	float SmoothRotationSpeed = 100.f;
+	UPROPERTY(EditAnywhere)
+	float FacingThreshold = 0.999f;
+public:
 	ATurretPawn();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void OnDeath() override;
 
+	void PointTheWeaponInDirection(FRotator Rotator);
+
+
+private:	
+	UFUNCTION()
+	void OnSeeDrone(APawn* Pawn);
 };

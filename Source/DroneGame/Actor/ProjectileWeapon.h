@@ -16,5 +16,7 @@ private:
 	TSubclassOf<class AProjectile> ProjectileClass;
 
 public:
-	virtual void Shoot(const FVector& Direction) override;
+	virtual bool Shoot(const FVector3d& Direction) override;
+
+
 };

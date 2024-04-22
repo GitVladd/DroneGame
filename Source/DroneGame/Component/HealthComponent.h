@@ -17,11 +17,11 @@ private:
 	class ABasePawn* BasePawnOwner;
 
 protected:
-	UPROPERTY(EditDefaultsOnly,  meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere,  meta = (AllowPrivateAccess = "true"))
 	float MaxHp = 100.f;
-	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	float CurHp = MaxHp;
-	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, meta = (AllowPrivateAccess = "true"))
 	bool bIsDead = false;
 
 
@@ -36,13 +36,20 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+protected:
+	void SetCurHp(float Value);
 public:
 
-	void SetCurHp(float Value);
+	UFUNCTION(BlueprintCallable)
 	float GetCurHp() const;
+	UFUNCTION(BlueprintCallable)
 	float GetMaxHp() const;
+	UFUNCTION(BlueprintCallable)
 	bool IsDead() const;
 
+	void DealDamage(float Value);
+	void Heal(float Value);
+	void OnDeath();
 	void Respawn();
 
 public:

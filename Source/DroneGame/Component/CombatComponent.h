@@ -14,8 +14,15 @@ private:
 	UPROPERTY()
 	class ABasePawn* BasePawnOwner;
 
-	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"))
+
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class AWeapon> CurrentWeaponClass;
+
+	UPROPERTY(VisibleAnywhere, meta = (AllowPrivateAccess = "true"))
 	class AWeapon* CurrentWeapon;
+public:
+	UPROPERTY(EditDefaultsOnly)
+	FName AttachWeaponSocketName = "ShootingLocation";
 public:	
 	UCombatComponent();
 
@@ -27,7 +34,12 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+protected:
+	virtual void CreateWeapon();
 public:
-	void Shoot(const FVector& Direction);
-		
+	virtual void Shoot();
+	virtual void Shoot(const FVector3d& Direction);
+	UFUNCTION(BlueprintCallable)
+	AWeapon* GetCurrentWeapon() const;
+
 };

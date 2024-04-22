@@ -24,7 +24,13 @@ private:
 	class UInputAction* RotateInputAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* CameraZoomInputAction;
+	class UInputAction* CameraLockInputAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* ShootInputAction;
+
+private:
+	bool bIsCameraLocked = false;
 protected:
 
 	virtual void BeginPlay();
@@ -36,5 +42,9 @@ protected:
 protected:
 	virtual void OnMoveInputActionTriggered(const struct FInputActionValue& Value);
 	virtual void OnRotateInputActionTriggered(const struct FInputActionValue& Value);
+	virtual void OnCameraLockInputActionTriggered(const struct FInputActionValue& Value);
+	virtual void OnCameraLockInputActionCompleted(const struct FInputActionValue& Value);
+	virtual void OnShootInputActionTriggered(const struct FInputActionValue& Value);
+	virtual void OnShootInputActionOngoing(const struct FInputActionValue& Value);
 
 };

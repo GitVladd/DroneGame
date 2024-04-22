@@ -15,14 +15,15 @@ class DRONEGAME_API ABasePawn : public APawn
 {
 	GENERATED_BODY()
 
-private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class USkeletalMeshComponent* SkeletalMesh;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UHealthComponent* HealthComponent;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UCombatComponent* CombatComponent;
 public:
 	ABasePawn();
@@ -32,17 +33,18 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable)
-	float TakeDamage(float DamageTaken, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	UFUNCTION()
+	virtual float TakeDamage(float DamageTaken, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-public:
-	const UHealthComponent* GetHealthComponent() const;
-
-	const UCombatComponent* GetCombatComponent() const;
-
-public:
-	void Shoot(const FVector& Direction);
-
-protected:
 	virtual void OnDeath();
+public:
+	USkeletalMeshComponent* GetSkeletalMeshComponent() const;
+
+	UHealthComponent* GetHealthComponent() const;
+
+	UCombatComponent* GetCombatComponent() const;
+
+public:
+	void Shoot();
+	void Shoot(const FVector3d& Direction);
 };

@@ -2,36 +2,30 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Projectile.generated.h"
+#include "Consumable.generated.h"
 
 UCLASS(Abstract)
-class DRONEGAME_API AProjectile : public AActor
+class DRONEGAME_API AConsumable : public AActor
 {
 	GENERATED_BODY()
-private:
+
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* CollisionBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	class UProjectileMovementComponent* ProjectileMovementComponent;
+	class UStaticMeshComponent* StaticMesh;
 
-private:
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile Settings")
-	float Damage = 10.f;
-	float InitSpeed = 3000.f;
-	float Lifespan = 10.f;
-	float GravityScale = 0.f;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay, meta = (AllowPrivateAccess = true))
+	USoundBase* PickUpSound;
 public:	
-	AProjectile();
+	AConsumable();
 
 protected:
 	virtual void BeginPlay() override;
 
 public:	
 	virtual void Tick(float DeltaTime) override;
-
 	UFUNCTION()
 	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
 };

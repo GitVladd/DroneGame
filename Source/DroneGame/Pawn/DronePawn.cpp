@@ -16,6 +16,7 @@ ADronePawn::ADronePawn()
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComponent->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+	CameraComponent->bUsePawnControlRotation = true;
 
 	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("FloatingMovementComponent"));
 	MovementComponent->UpdatedComponent = RootComponent;
@@ -38,59 +39,80 @@ void ADronePawn::Tick(float DeltaTime)
 
 }
 
-void ADronePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+
+UCameraComponent* ADronePawn::GetCameraComponent() const
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	return CameraComponent;
 }
-
 
 void ADronePawn::MoveForward(float Value)
 {
-	MovementDirection.X = Value;
-	//MovementDirection.Normalize();
-	MovementComponent->AddInputVector(MovementDirection);
+	FVector3d Direction = GetActorForwardVector() * Value;
+
+	MovementComponent->AddInputVector(Direction);
 }
 
 void ADronePawn::MoveRight(float Value)
 {
-	MovementDirection.Y = Value;
-	//MovementDirection.Normalize();
-	MovementComponent->AddInputVector(MovementDirection);
+	FVector3d Direction = GetActorRightVector() * Value;
+
+	MovementComponent->AddInputVector(Direction);
 }
 
 void ADronePawn::MoveUp(float Value)
 {
-	MovementDirection.Z = Value;
-	//MovementDirection.Normalize();
-	MovementComponent->AddInputVector(MovementDirection);
+	FVector3d Direction = GetActorUpVector() * Value;
+
+	MovementComponent->AddInputVector(Direction);
 }
 
-// TO DO : FIX CAMERA ROTAITON
 void ADronePawn::RotateCamera(FVector2D Value)
 {
 	if (!CameraComponent) return;
+	if (!Controller) return;
 
-	// Calculate the delta rotation based on input values
-	FVector Axis = FVector(0.0f, 0.0f, 1.0f); // Rotation axis is around Z-axis for yaw
-	FRotator DeltaRotation = FRotator(-Value.Y * RotationSpeed, Value.X * RotationSpeed, 0.0f);
+	float AdjustedRotationSpeed = RotationSpeed * GetWorld()->GetDeltaSeconds();
 
-	// Convert the delta rotation to a quaternion
-	FQuat DeltaQuat = FQuat(DeltaRotation);
+	AddControllerYawInput(Value.X * AdjustedRotationSpeed);
+	AddControllerPitchInput(Value.Y * AdjustedRotationSpeed);
+}
 
-	// Get the current relative rotation of the camera as a quaternion
-	FQuat CurrentQuat = FQuat(CameraComponent->GetRelativeRotation());
+void ADronePawn::RotateDrone(FVector2D Value)
+{
+	if (!CameraComponent) return;
+	if (!Controller) return;
 
-	// Combine the delta rotation with the current rotation using quaternion multiplication
-	FQuat NewQuat = CurrentQuat * DeltaQuat;
+	float AdjustedRotationSpeed = RotationSpeed * GetWorld()->GetDeltaSeconds();
 
-	// Normalize the resulting quaternion to ensure it represents a valid rotation
-	NewQuat.Normalize();
+	AddControllerYawInput(Value.X * AdjustedRotationSpeed);
+	AddControllerPitchInput(Value.Y * AdjustedRotationSpeed);
 
-	// Convert the resulting quaternion back to a rotator
-	FRotator NewRotation = NewQuat.Rotator();
+	FRotator ControlRotation = GetControlRotation();
+	FRotator TargetRotation = FRotator(0.f, ControlRotation.Yaw, 0.f); 
+	FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, GetWorld()->GetDeltaSeconds(), SmoothRotationSpeed);
 
-	// Set the new relative rotation of the camera
-	CameraComponent->SetRelativeRotation(NewRotation);
+	MovementComponent->UpdatedComponent->SetWorldRotation(NewRotation);
+
+}
+
+void ADronePawn::OnDeath()
+{
+	Super::OnDeath();
+
+	// Disable the movement component
+	if (MovementComponent)
+	{
+		MovementComponent->StopMovementImmediately();
+		MovementComponent->Deactivate();
+	}
+
+	DisableInput(Cast<APlayerController>(GetController()));
+
+	// Hide the skeletal mesh
+	if (SkeletalMesh)
+	{
+		SkeletalMesh->SetVisibility(false);
+	}
+
 }
 

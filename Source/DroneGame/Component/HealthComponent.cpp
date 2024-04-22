@@ -8,6 +8,8 @@
 UHealthComponent::UHealthComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+
+	bWantsInitializeComponent = true;
 }
 
 
@@ -20,11 +22,23 @@ void UHealthComponent::BeginPlay()
 
 void UHealthComponent::InitializeComponent()
 {
-	if (AActor* owner = GetOwner()) {
-		BasePawnOwner = Cast<ABasePawn>(owner);
-		if (BasePawnOwner) return;
+	Super::InitializeComponent();
+
+	FString ComponentId = GetName();
+
+	AActor* Owner = GetOwner();
+	if (!Owner)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InitializeComponent() failed: GetComponentOwner() returned nullptr [Component ID: %s]"), *ComponentId);
+		return;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("%s owner was not initialized"), *FString(GetClass()->GetName()));
+
+	BasePawnOwner = Cast<ABasePawn>(Owner);
+	if (!BasePawnOwner)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InitializeComponent() failed: Owner is not of type ABasePawn [Component ID: %s]"), *ComponentId);
+		return;
+	}
 }
 
 void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -37,6 +51,7 @@ void  UHealthComponent::SetCurHp(float Value) {
 
 	if (CurHp == 0.f) {
 		bIsDead = true;
+		OnDeath();
 	}
 }
 float UHealthComponent::GetCurHp() const {
@@ -50,6 +65,27 @@ float  UHealthComponent::GetMaxHp() const {
 bool UHealthComponent::IsDead() const
 {
 	return bIsDead;
+}
+
+void UHealthComponent::DealDamage(float Value)
+{
+	if (Value <= 0) return;
+	if (bIsDead) return;
+	float newHp = CurHp - Value;
+	SetCurHp(newHp);
+}
+
+void UHealthComponent::Heal(float Value)
+{
+	if (Value <= 0) return;
+	if (bIsDead) return;
+	float newHp = CurHp + Value;
+	SetCurHp(newHp);
+}
+
+void UHealthComponent::OnDeath()
+{
+	BasePawnOwner->OnDeath();
 }
 
 void UHealthComponent::Respawn()
